@@ -1,32 +1,43 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-
 exports.signup = async (req, res) => {
-    const { phoneNumber, name, gender, dob, username, email, password, confirmPassword } = req.body;
+    try {
+        console.log("Request Body:", req.body); // Log the request body
+        
+        const { phoneNumber, name, gender, dob, user_id, email, password, confirmPassword } = req.body;
 
-    if (password !== confirmPassword) {
-        return res.status(400).json({ message: 'Passwords do not match' });
+        if (password !== confirmPassword) {
+            return res.status(400).json({ message: 'Passwords do not match' });
+        }
+
+        const existingUser = await User.findOne({ $or: [{ phoneNumber }, { user_id }] });
+        if (existingUser) {
+            return res.status(400).json({ message: 'User already exists.' });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const user = new User({
+            phoneNumber,
+            name,
+            gender,
+            dob,
+            user_id,
+            email,
+            password: hashedPassword,
+        });
+
+        console.log("User before saving:", user); // Log the user object before saving
+        
+        await user.save();
+
+        console.log("User saved:", user); // Log the user after saving
+        
+        res.status(201).send({ message: 'User registered successfully' });
+    } catch (error) {
+        console.error("Error in signup:", error); // Catch and log any errors
+        res.status(500).send({ message: 'Server error' });
     }
-
-    const existingUser = await User.findOne({ $or: [{ phoneNumber }, { username }] });
-    if (existingUser) {
-        return res.status(400).json({ message: 'User already exists.' });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({
-        phoneNumber,
-        name,
-        gender,
-        dob,
-        username,
-        email,
-        password: hashedPassword,
-    });
-
-    await user.save();
-    res.status(201).send({ message: 'User registered successfully' });
 };
 
 exports.login = async (req, res) => {
@@ -35,7 +46,10 @@ exports.login = async (req, res) => {
 
     if (user && await bcrypt.compare(password, user.password)) {
         const token = jwt.sign({ user_id: user._id }, process.env.JWT_SECRET);
-        res.status(200).send({ token, user_id:user.username, name: user.name });
+        console.log(token)
+        user.tokens=user.tokens.concat({token})
+        await user.save()
+        res.status(200).send({ token, user_id:user.user_id, name: user.name });
     } else {
         res.status(401).send({ message: 'Invalid credentials' });
     }
@@ -45,6 +59,7 @@ exports.getProfile = async (req, res) => {
     const user = await User.findById(req.user.user_id);
     res.status(200).send({ user_id: user._id, name: user.name });
 };
+
 /*
 http://localhost:3001/api/auth/signup
 {
