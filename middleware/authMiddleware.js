@@ -13,7 +13,7 @@ const authMiddleware = async(req, res, next) => {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         console.log("decoded",decoded)
-        const user = await User.findOne({ _id: decoded.user_id, 'tokens.token': token });
+        const user = await User.findOne({ user_id: decoded.user_id, 'tokens.token': token });
         console.log("user",user)
         if (!user) {
           throw new Error();

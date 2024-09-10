@@ -45,7 +45,7 @@ exports.login = async (req, res) => {
     const user = await User.findOne({ phoneNumber });
 
     if (user && await bcrypt.compare(password, user.password)) {
-        const token = jwt.sign({ user_id: user._id }, process.env.JWT_SECRET);
+        const token = jwt.sign({ user_id: user.user_id }, process.env.JWT_SECRET);
         console.log(token)
         user.tokens=user.tokens.concat({token})
         await user.save()

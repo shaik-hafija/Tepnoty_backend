@@ -5,13 +5,13 @@ const Problem = require('../models/problem');
 exports.reportProblem = async (req, res) => {
     const { description, image, video } = req.body; 
     // const { user_id } = req.params; 
-    const user_id = req.user._id;
+    const user_id = req.user.user_id;
 
     console.log("Received user_id:", user_id); // Debugging line
 
     try {
         const problem = new Problem({
-            user_id: user_id,
+            user_id:user_id,
             description,
             image, 
             video
@@ -26,8 +26,9 @@ exports.reportProblem = async (req, res) => {
 
 // Get problems for a specific user
 exports.getProblems = async (req, res) => {
-    const user_id = req.user._id; // Assumes user_id is attached to req.user
-    console.log("decoded",user_id)
+    console.log("In get problems")
+    const user_id = req.user.user_id; // Assumes user_id is attached to req.user
+    console.log("In get problems decoded : ",user_id)
 
     try {
         // Find problems reported by the specific user
