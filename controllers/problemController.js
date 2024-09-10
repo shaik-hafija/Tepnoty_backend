@@ -1,4 +1,5 @@
 const Problem = require('../models/problem');
+// const User=require('../models/user')
 
 // Report a problem
 exports.reportProblem = async (req, res) => {
@@ -25,10 +26,12 @@ exports.reportProblem = async (req, res) => {
 
 // Get problems for a specific user
 exports.getProblems = async (req, res) => {
-    const { user_id } = req.params; // Get user_id from route parameters
+    const user_id = req.user._id; // Assumes user_id is attached to req.user
+    console.log("decoded",user_id)
 
     try {
-        const problems = await Problem.find({ user_id: mongoose.Types.ObjectId(user_id) });
+        // Find problems reported by the specific user
+        const problems = await Problem.find({ user_id });
         res.status(200).send(problems);
     } catch (error) {
         res.status(500).send({ message: 'Error fetching problems', error: error.message });

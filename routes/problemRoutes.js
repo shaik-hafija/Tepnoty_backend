@@ -8,6 +8,6 @@ const router = express.Router();
 router.post('/report-problem', authMiddleware, reportProblem);
 
 // Route to get problems for a specific user (GET /problems/:user_id)
-router.get('/problems', authMiddleware, getProblems);
+router.get('/get_problems', authMiddleware, getProblems);
 
 module.exports = router;
