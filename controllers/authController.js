@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const User = require('../models/user');
+// const User = require('../models/user');
 exports.signup = async (req, res) => {
     try {
         console.log("Request Body:", req.body); // Log the request body
@@ -24,7 +24,7 @@ exports.signup = async (req, res) => {
             dob,
             user_id,
             email,
-            password: hashedPassword,
+            password:hashedPassword
         });
 
         console.log("User before saving:", user); // Log the user object before saving
@@ -42,6 +42,7 @@ exports.signup = async (req, res) => {
 
 exports.login = async (req, res) => {
     const { phoneNumber, password } = req.body;
+    console.log("hell")
     const user = await User.findOne({ phoneNumber });
 
     if (user && await bcrypt.compare(password, user.password)) {
@@ -55,10 +56,79 @@ exports.login = async (req, res) => {
     }
 };
 
+
+// exports.getProfile = async (req, res) => {
+//     const user = await User.findById(req.user.user_id);
+//     res.status(200).send({ user_id: user._id, name: user.name });
+// };
 exports.getProfile = async (req, res) => {
-    const user = await User.findById(req.user.user_id);
-    res.status(200).send({ user_id: user._id, name: user.name });
+    const user = await User.findOne({ user_id: req.user.user_id });
+    res.status(200).send({ user_id: user.user_id, name: user.name, email: user.email, phoneNumber: user.phoneNumber, gender: user.gender, dob: user.dob });
 };
+
+exports.editProfile = async (req, res) => {
+    try {
+        const { name, gender, dob, email, phoneNumber } = req.body;
+        const user = await User.findOne({ user_id: req.user.user_id });
+
+        if (!user) {
+            return res.status(404).send({ message: 'User not found' });
+        }
+
+        // Update fields if provided
+        if (name) user.name = name;
+        if (gender) user.gender = gender;
+        if (dob) user.dob = dob;
+        if (email) user.email = email;
+        if (phoneNumber) user.phoneNumber = phoneNumber;
+
+        // If password is provided, update it after hashing
+        // if (password) {
+        //     const hashedPassword = await bcrypt.hash(password, 10);
+        //     user.password = hashedPassword;
+        // }
+
+        await user.save();
+
+        res.status(200).send({ message: 'Profile updated successfully', user_id: user.user_id, name: user.name, email: user.email, phoneNumber: user.phoneNumber, gender: user.gender, dob: user.dob });
+    } catch (error) {
+        console.error("Error in editProfile:", error);
+        res.status(500).send({ message: 'Server error' });
+    }
+};
+const User = require('../models/user'); // Adjust the path to your User schema
+
+exports.deleteProfile = async (req, res) => {
+    console.log("deleteProfile function called");
+
+    try {
+        const user_id = req.user.user_id;
+        const { primary_reason, improvement_feedback } = req.body;
+
+        console.log("Received data:", req.body);
+
+        // Check if primary_reason and improvement_feedback are provided
+        if (!primary_reason || !improvement_feedback) {
+            return res.status(400).send({ error: "Primary reason and improvement feedback are required." });
+        }
+
+        console.log("Attempting to delete user:", user_id);
+
+        // Deleting the user from the User schema
+        const deletedUser = await User.findOneAndDelete({ user_id });
+
+        if (!deletedUser) {
+            return res.status(404).send({ error: "User not found or already deleted." });
+        }
+
+        // If successful
+        res.status(200).send({ message: "Account deleted successfully." });
+    } catch (error) {
+        console.error("Error deleting account:", error);
+        res.status(500).send({ error: "Failed to delete account." });
+    }
+};
+
 
 /*
 http://localhost:3001/api/auth/signup
