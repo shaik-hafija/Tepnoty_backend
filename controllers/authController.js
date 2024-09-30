@@ -11,7 +11,7 @@ exports.signup = async (req, res) => {
             return res.status(400).json({ message: 'Passwords do not match' });
         }
 
-        const existingUser = await User.findOne({ $or: [{ phoneNumber }, { user_id }] });
+        const existingUser = await User.findOne({  user_id  });
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists.' });
         }
@@ -46,7 +46,7 @@ exports.login = async (req, res) => {
     const user = await User.findOne({ phoneNumber });
 
     if (user && await bcrypt.compare(password, user.password)) {
-        const token = jwt.sign({ user_id: user.user_id }, process.env.JWT_SECRET);
+        const token = jwt.sign({ user_id: user.user_id }, process.env.JWT_SECRET, { expiresIn: '2m' });
         console.log(token)
         user.tokens=user.tokens.concat({token})
         await user.save()
