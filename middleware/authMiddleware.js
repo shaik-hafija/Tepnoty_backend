@@ -9,7 +9,7 @@ const authMiddleware = async(req, res, next) => {
 
     // Remove 'Bearer ' from token if included
     const token = req.header('Authorization').replace('Bearer ','');
-    console.log(token);
+    // console.log(token);
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         console.log("decoded",decoded)
@@ -21,7 +21,7 @@ const authMiddleware = async(req, res, next) => {
     
         req.token = token;
         req.user = user;
-        console.log(user)
+        // console.log(user)
         next();
      }
     catch (error) {

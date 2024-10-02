@@ -31,7 +31,7 @@ exports.signup = async (req, res) => {
         
         await user.save();
 
-        console.log("User saved:", user); // Log the user after saving
+        // console.log("User saved:", user); // Log the user after saving
         
         res.status(201).send({ message: 'User registered successfully' });
     } catch (error) {

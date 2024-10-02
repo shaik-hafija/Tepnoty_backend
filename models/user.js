@@ -8,6 +8,9 @@ const userSchema = new mongoose.Schema({
     user_id: { type: String, required: true, unique: true }, // Ensure user_id is defined and unique
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
+    followers: [{ type: String }],
+    following: [{ type: String }],
+    blockedUsers: [{ type: String }],
     tokens: [{ token: { type: String, required: true } }],
 }, { timestamps: true });
 
